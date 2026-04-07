@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task Stats</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .app { background: #1e293b; border-radius: 16px; padding: 2rem; width: 100%; max-width: 540px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+    h1 { font-size: 1.8rem; margin-bottom: 1.5rem; color: #38bdf8; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .card { background: #0f172a; border-radius: 12px; padding: 1.5rem; text-align: center; }
+    .card .number { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .card .label { font-size: 0.85rem; color: #94a3b8; }
+    .total .number { color: #38bdf8; }
+    .completed .number { color: #22c55e; }
+    .pending .number { color: #f59e0b; }
+    .back { display: inline-block; padding: 0.75rem 1.25rem; background: #38bdf8; color: #0f172a; border-radius: 8px; font-weight: 700; text-decoration: none; transition: background 0.2s; }
+    .back:hover { background: #7dd3fc; }
+    .progress-bar { background: #0f172a; border-radius: 99px; height: 12px; margin-bottom: 2rem; overflow: hidden; }
+    .progress-fill { height: 100%; background: #22c55e; border-radius: 99px; transition: width 0.5s ease; }
+    .progress-label { font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <h1>📊 Task Stats</h1>
+  <div class="cards">
+    <div class="card total">
+      <div class="number" id="total">-</div>
+      <div class="label">Total Tasks</div>
+    </div>
+    <div class="card completed">
+      <div class="number" id="completed">-</div>
+      <div class="label">Completed</div>
+    </div>
+    <div class="card pending">
+      <div class="number" id="pending">-</div>
+      <div class="label">Pending</div>
+    </div>
+  </div>
+  <div class="progress-label">Completion Rate</div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress" style="width: 0%"></div>
+  </div>
+  <a class="back" href="/">← Back to Tasks</a>
+</div>
+<script>
+  async function loadStats() {
+    const res = await fetch('/api/stats');
+    const stats = await res.json();
+    document.getElementById('total').textContent = stats.total;
+    document.getElementById('completed').textContent = stats.completed;
+    document.getElementById('pending').textContent = stats.pending;
+    const rate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+    document.getElementById('progress').style.width = rate + '%';
+  }
+  loadStats();
+</script>
+</body>
+</html>

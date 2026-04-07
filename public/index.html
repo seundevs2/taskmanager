@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task Manager</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .app { background: #1e293b; border-radius: 16px; padding: 2rem; width: 100%; max-width: 540px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+    h1 { font-size: 1.8rem; margin-bottom: 1.5rem; color: #38bdf8; }
+    .input-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    input { flex: 1; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 1rem; }
+    button { padding: 0.75rem 1.25rem; border: none; border-radius: 8px; background: #38bdf8; color: #0f172a; font-weight: 700; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
+    button:hover { background: #7dd3fc; }
+    .task { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; background: #0f172a; border-radius: 10px; margin-bottom: 0.6rem; transition: opacity 0.2s; }
+    .task.done span { text-decoration: line-through; color: #475569; }
+    .task span { flex: 1; font-size: 0.97rem; }
+    .del { background: #ef4444; padding: 0.4rem 0.75rem; font-size: 0.8rem; border-radius: 6px; color: white; }
+    .del:hover { background: #f87171; }
+    input[type=checkbox] { width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer; }
+    .empty { text-align: center; color: #475569; padding: 2rem 0; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <h1>📋 Task Manager</h1>
+<h1>📋 Task Manager</h1>
+<a href="/stats.html" style="display:inline-block;margin-bottom:1rem;color:#38bdf8;font-size:0.9rem;">📊 View Stats →</a>
+  <div class="input-row">
+    <input id="taskInput" type="text" placeholder="Add a new task..." onkeydown="if(event.key==='Enter')addTask()" />
+    <button onclick="addTask()">Add</button>
+  </div>
+  <div id="taskList"></div>
+</div>
+<script>
+  async function loadTasks() {
+    const res = await fetch('/api/tasks');
+    const tasks = await res.json();
+    const list = document.getElementById('taskList');
+    if (!tasks.length) { list.innerHTML = '<div class="empty">No tasks yet. Add one above!</div>'; return; }
+    list.innerHTML = tasks.map(t => `
+      <div class="task ${t.done ? 'done' : ''}" id="task-${t.id}">
+        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id}, this.checked)" />
+        <span>${t.title}</span>
+        <button class="del" onclick="deleteTask(${t.id})">✕</button>
+      </div>`).join('');
+  }
+  async function addTask() {
+    const input = document.getElementById('taskInput');
+    const title = input.value.trim();
+    if (!title) return;
+    await fetch('/api/tasks', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ title }) });
+    input.value = '';
+    loadTasks();
+  }
+  async function toggleTask(id, done) {
+    await fetch(`/api/tasks/${id}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ done }) });
+    loadTasks();
+  }
+  async function deleteTask(id) {
+    await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+    loadTasks();
+  }
+  loadTasks();
+</script>
+</body>
+</html>
